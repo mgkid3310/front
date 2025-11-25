@@ -4,14 +4,13 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-
+    // Get form data from request
+    const formData = await request.formData();
+    
+    // Forward the form data to backend
     const response = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+      body: formData,
     });
 
     const data = await response.json();
