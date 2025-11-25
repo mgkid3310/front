@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     // Get form data from request
     const formData = await request.formData();
-    
+
     // Forward the form data to backend
     const response = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',

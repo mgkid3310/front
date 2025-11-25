@@ -79,6 +79,18 @@ export default function DMPage() {
       if (data.typing_ref !== undefined) {
         if (data.typing_ref === null) {
           setIsTyping(false);
+        } else if (data.typing_ref === '') {
+          // Empty string means typing without a reference message (e.g., first message)
+          // Only show typing if there are no messages from the character yet
+          setMessages((prev) => {
+            const hasCharacterMessage = prev.some(
+              (msg) => msg.source_uid === CHARACTER_CONFIG.PROFILE_UID
+            );
+            if (!hasCharacterMessage) {
+              setIsTyping(true);
+            }
+            return prev;
+          });
         } else {
           // Show typing only if the typing_ref matches the last message FROM THE CHARACTER
           setMessages((prev) => {
