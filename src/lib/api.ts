@@ -15,17 +15,6 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// Add token to requests if available
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
 // Auth APIs
 export const authAPI = {
   signup: async (email: string, password: string, username: string): Promise<User> => {
@@ -91,7 +80,6 @@ export const dmAPI = {
     onMessage: (data: any) => void,
     onError?: (error: Error) => void
   ) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
     // Use Next.js API route for SSE streaming
     const url = new URL('/api/dm/stream', window.location.origin);
     url.searchParams.append('source_uid', sourceUid);
@@ -106,7 +94,6 @@ export const dmAPI = {
           method: 'GET',
           headers: {
             Accept: 'text/event-stream',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           signal: abortController.signal,
         });

@@ -19,7 +19,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
-    return NextResponse.json(data);
+    // Create response with cookie
+    const res = NextResponse.json(data);
+
+    // Set HttpOnly cookie
+    res.cookies.set('access_token', data.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: data.expires_in || 3600, // Default to 1 hour if not provided
+    });
+
+    return res;
   } catch (error) {
     console.error('Login proxy error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
