@@ -236,15 +236,15 @@ export default function DMPage() {
     <div className="flex h-screen bg-white">
       {/* Sidebar - Character List */}
       <div
-        className={`border-r border-gray-200 flex flex-col bg-gray-50 ${targetProfile ? 'hidden md:flex md:w-80' : 'w-full md:w-80 flex'}`}
+        className={`border-r border-[#dbdbdb] flex flex-col bg-white ${targetProfile ? 'hidden md:flex md:w-96' : 'w-full md:w-96 flex'}`}
       >
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white">
-          <h1 className="font-bold text-lg">Messages</h1>
+        <div className="p-5 border-b border-[#dbdbdb] flex items-center justify-between bg-white sticky top-0 z-10">
+          <h1 className="font-semibold text-base text-[#262626]">{user.username}</h1>
           <button
             onClick={() => router.push('/home')}
-            className="text-sm text-gray-500 hover:text-gray-800"
+            className="text-sm text-[#262626] hover:text-gray-500 font-semibold"
           >
-            Exit
+            홈으로
           </button>
         </div>
         <div className="flex-1 overflow-y-auto">
@@ -252,16 +252,26 @@ export default function DMPage() {
             <div
               key={char.uid}
               onClick={() => setTargetProfile(char)}
-              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors ${
-                targetProfile?.uid === char.uid ? 'bg-blue-50' : ''
+              className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-3 ${
+                targetProfile?.uid === char.uid ? 'bg-gray-50' : ''
               }`}
             >
-              <div className="font-semibold">{char.name}</div>
-              <div className="text-xs text-gray-500 truncate">{char.bio || 'No bio'}</div>
+              {/* Avatar */}
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-[52px] h-[52px] rounded-full bg-white flex items-center justify-center text-xl font-semibold text-gray-700">
+                  {char.name.charAt(0)}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-[#262626] text-sm">{char.name}</div>
+                <div className="text-xs text-gray-500 truncate mt-0.5">{char.status || ''}</div>
+              </div>
             </div>
           ))}
           {characterList.length === 0 && (
-            <div className="p-4 text-center text-gray-500 text-sm">No characters available.</div>
+            <div className="p-8 text-center text-gray-400 text-sm">
+              대화 가능한 캐릭터가 없습니다.
+            </div>
           )}
         </div>
       </div>
@@ -284,6 +294,12 @@ export default function DMPage() {
                   />
                 </svg>
               </button>
+              {/* Avatar in header */}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-[36px] h-[36px] rounded-full bg-white flex items-center justify-center text-sm font-semibold text-gray-700">
+                  {targetProfile.name.charAt(0)}
+                </div>
+              </div>
               <div className={styles.headerInfo}>
                 <h2>{targetProfile.name}</h2>
                 <span className={styles.status}>온라인</span>

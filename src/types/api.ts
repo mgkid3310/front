@@ -106,6 +106,7 @@ export interface Profile {
   name: string;
   age?: number;
   bio?: string;
+  status?: string;
   created: string;
 }
 
@@ -113,6 +114,7 @@ export interface ProfileCreate {
   name: string;
   age?: number;
   bio?: string;
+  status?: string;
 }
 
 export interface Relationship {

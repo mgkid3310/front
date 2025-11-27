@@ -132,12 +132,12 @@ export default function UniversePage() {
             onChange={(e) => setNewUniverseName(e.target.value)}
             required
           />
-          <input
-            type="text"
+          <textarea
             placeholder="Description (Lore)"
-            className="w-full px-3 py-2 bg-white border border-[#dbdbdb] rounded-[4px] text-sm focus:border-[#a8a8a8] focus:outline-none"
+            className="w-full px-3 py-2 bg-white border border-[#dbdbdb] rounded-[4px] text-sm focus:border-[#a8a8a8] focus:outline-none resize-none"
             value={newUniverseDesc}
             onChange={(e) => setNewUniverseDesc(e.target.value)}
+            rows={6}
           />
           <button
             type="submit"
