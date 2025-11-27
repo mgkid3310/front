@@ -38,6 +38,14 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
       });
     }
 
+    // Handle 204 No Content responses
+    if (response.status === 204) {
+      return new NextResponse(null, {
+        status: 204,
+        headers: response.headers,
+      });
+    }
+
     const data = await response.blob();
     return new NextResponse(data, {
       status: response.status,
