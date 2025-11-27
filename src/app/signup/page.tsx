@@ -25,9 +25,13 @@ export default function SignupPage() {
       const user = await authAPI.signup(email, password, username);
       const loginResponse = await authAPI.login(email, password);
 
-      // TODO: Backend should return profile UID or provide endpoint to fetch it
-      // For now, assuming user.uid is the profile UID for new accounts
-      setAuth(user, loginResponse.access_token, user.uid);
+      // Create initial profile for new user
+      const newProfile = await authAPI.createMyProfile(
+        { name: username },
+        loginResponse.access_token
+      );
+
+      setAuth(user, loginResponse.access_token, newProfile.uid);
 
       router.push('/home');
     } catch (err) {

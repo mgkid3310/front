@@ -24,9 +24,21 @@ export default function LoginPage() {
       const loginResponse = await authAPI.login(email, password);
       const user = await authAPI.getCurrentUser(loginResponse.access_token);
 
-      // TODO: Fetch actual profile UID from backend
-      // For now using hardcoded profile UID for test account
-      const profileUid = 'db6wylxEk4DN'; // Test account profile UID
+      // Fetch user profiles
+      const profiles = await authAPI.getMyProfiles(loginResponse.access_token);
+
+      let profileUid;
+      if (profiles.length > 0) {
+        profileUid = profiles[0].uid;
+      } else {
+        // Create a default profile if none exists
+        const newProfile = await authAPI.createMyProfile(
+          { name: user.username || 'New User' },
+          loginResponse.access_token
+        );
+        profileUid = newProfile.uid;
+      }
+
       setAuth(user, loginResponse.access_token, profileUid);
 
       router.push('/home');

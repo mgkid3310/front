@@ -104,9 +104,15 @@ export interface Profile {
   owner_uid: string;
   owner_type: string;
   name: string;
-  age: number | null;
-  bio: string;
+  age?: number;
+  bio?: string;
   created: string;
+}
+
+export interface ProfileCreate {
+  name: string;
+  age?: number;
+  bio?: string;
 }
 
 export interface Relationship {
@@ -127,4 +133,8 @@ export interface MemoryUpdate {
   short_term?: string;
   memo_items?: Record<string, string>[];
   monologues?: Record<string, string>[];
+}
+
+export interface ProfileListResponse {
+  profiles: Profile[];
 }

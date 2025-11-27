@@ -6,6 +6,9 @@ import type {
   MessageHistoryResponse,
   SendMessageRequest,
   TypingRequest,
+  Profile,
+  ProfileCreate,
+  ProfileListResponse,
 } from '@/types/api';
 
 // Use Next.js API routes as proxy to backend
@@ -38,6 +41,18 @@ export const authAPI = {
   getCurrentUser: async (token?: string): Promise<User> => {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const { data } = await api.get<User>('/auth/me', { headers });
+    return data;
+  },
+
+  getMyProfiles: async (token?: string): Promise<Profile[]> => {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const { data } = await api.get<Profile[]>('/auth/me/profiles', { headers });
+    return data;
+  },
+
+  createMyProfile: async (profile: ProfileCreate, token?: string): Promise<Profile> => {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const { data } = await api.post<Profile>('/auth/me/profiles', profile, { headers });
     return data;
   },
 };
@@ -151,6 +166,14 @@ export const dmAPI = {
         }
       },
     };
+  },
+};
+
+// Profile APIs
+export const profileAPI = {
+  getCharacterProfiles: async (): Promise<Profile[]> => {
+    const { data } = await api.get<ProfileListResponse>('/profiles/characters');
+    return data.profiles;
   },
 };
 
