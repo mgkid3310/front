@@ -225,11 +225,20 @@ export const dmAPI = {
 
     const connect = async () => {
       try {
+        const headers: Record<string, string> = {
+          Accept: 'text/event-stream',
+        };
+
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem('access_token');
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+        }
+
         const response = await fetch(url.toString(), {
           method: 'GET',
-          headers: {
-            Accept: 'text/event-stream',
-          },
+          headers,
           signal: abortController.signal,
         });
 
