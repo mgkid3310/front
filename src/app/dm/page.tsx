@@ -19,9 +19,15 @@ export default function DMPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastTypingTimeRef = useRef<number>(0);
+
+  // Wait for hydration to complete
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -34,6 +40,9 @@ export default function DMPage() {
 
   // Load target profile and initial messages
   useEffect(() => {
+    // Don't check auth until hydration is complete
+    if (!isHydrated) return;
+
     if (!user || !profileUid) {
       router.push('/login');
       return;
@@ -52,7 +61,7 @@ export default function DMPage() {
     };
 
     init();
-  }, [user, profileUid, router]);
+  }, [isHydrated, user, profileUid, router]);
 
   // Load messages when targetProfile changes
   useEffect(() => {

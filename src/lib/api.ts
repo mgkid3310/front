@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import type {
   User,
   LoginResponse,
@@ -18,6 +18,113 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
+// Flag to prevent multiple simultaneous refresh attempts
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
+};
+
+const addRefreshSubscriber = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor for token rotation
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // If error is 401 and we haven't retried yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Wait for the refresh to complete
+        return new Promise((resolve) => {
+          addRefreshSubscriber((token: string) => {
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const refreshToken = typeof window !== 'undefined' 
+          ? localStorage.getItem('refresh_token') 
+          : null;
+
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
+
+        // Call rotate endpoint
+        const { data } = await axios.post<LoginResponse>(
+          `${API_URL}/auth/rotate`,
+          { refresh_token: refreshToken }
+        );
+
+        const { access_token, refresh_token: newRefreshToken } = data;
+
+        // Update tokens in localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('access_token', access_token);
+          localStorage.setItem('refresh_token', newRefreshToken);
+        }
+
+        // Update zustand store if available
+        if (typeof window !== 'undefined') {
+          const { useAuthStore } = await import('@/stores/authStore');
+          useAuthStore.getState().setTokens(access_token, newRefreshToken);
+        }
+
+        isRefreshing = false;
+        onRefreshed(access_token);
+
+        // Retry original request with new token
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
+        }
+        return api(originalRequest);
+      } catch (refreshError) {
+        isRefreshing = false;
+        refreshSubscribers = [];
+
+        // Refresh failed, logout user
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          const { useAuthStore } = await import('@/stores/authStore');
+          useAuthStore.getState().clearAuth();
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Auth APIs
 export const authAPI = {
   signup: async (email: string, password: string, username: string): Promise<User> => {
@@ -34,6 +141,19 @@ export const authAPI = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
+    });
+    
+    // Store refresh token
+    if (data.refresh_token && typeof window !== 'undefined') {
+      localStorage.setItem('refresh_token', data.refresh_token);
+    }
+    
+    return data;
+  },
+
+  rotate: async (refreshToken: string): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/rotate', {
+      refresh_token: refreshToken,
     });
     return data;
   },

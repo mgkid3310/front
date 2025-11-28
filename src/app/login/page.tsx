@@ -39,7 +39,7 @@ export default function LoginPage() {
         profileUid = newProfile.uid;
       }
 
-      setAuth(user, loginResponse.access_token, profileUid);
+      setAuth(user, loginResponse.access_token, loginResponse.refresh_token, profileUid);
 
       router.push('/home');
     } catch (err) {
