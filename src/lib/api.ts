@@ -14,7 +14,7 @@ import type {
 // Use Next.js API routes as proxy to backend
 const API_URL = '/api';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_URL,
 });
 
@@ -69,19 +69,17 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = typeof window !== 'undefined' 
-          ? localStorage.getItem('refresh_token') 
-          : null;
+        const refreshToken =
+          typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
 
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
 
         // Call rotate endpoint
-        const { data } = await axios.post<LoginResponse>(
-          `${API_URL}/auth/rotate`,
-          { refresh_token: refreshToken }
-        );
+        const { data } = await axios.post<LoginResponse>(`${API_URL}/auth/rotate`, {
+          refresh_token: refreshToken,
+        });
 
         const { access_token, refresh_token: newRefreshToken } = data;
 
@@ -142,12 +140,12 @@ export const authAPI = {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
-    
+
     // Store refresh token
     if (data.refresh_token && typeof window !== 'undefined') {
       localStorage.setItem('refresh_token', data.refresh_token);
     }
-    
+
     return data;
   },
 

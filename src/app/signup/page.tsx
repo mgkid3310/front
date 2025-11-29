@@ -31,7 +31,7 @@ export default function SignupPage() {
         loginResponse.access_token
       );
 
-      setAuth(user, loginResponse.access_token, newProfile.uid);
+      setAuth(user, loginResponse.access_token, loginResponse.refresh_token, newProfile.uid);
 
       router.push('/home');
     } catch (err) {

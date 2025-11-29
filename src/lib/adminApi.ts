@@ -1,4 +1,3 @@
-import axios from 'axios';
 import type {
   Universe,
   UniverseCreate,
@@ -15,12 +14,7 @@ import type {
   MemoryUpdate,
   MessageHistoryResponse,
 } from '@/types/api';
-
-const API_URL = '/api';
-
-const api = axios.create({
-  baseURL: API_URL,
-});
+import { api } from './api';
 
 export const adminAPI = {
   // Universe
