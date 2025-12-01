@@ -134,8 +134,6 @@ export interface Memory {
 
 export interface MemoryUpdate {
   short_term?: string;
-  memo_items?: Record<string, string>[];
-  monologues?: Record<string, string>[];
 }
 
 export interface ProfileListResponse {

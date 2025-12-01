@@ -13,8 +13,6 @@ export default function MemoryDetailPage() {
 
   // Form State
   const [shortTerm, setShortTerm] = useState('');
-  const [memoItemsJson, setMemoItemsJson] = useState('[]');
-  const [monologuesJson, setMonologuesJson] = useState('[]');
 
   const loadMemory = useCallback(
     async (id: string) => {
@@ -22,8 +20,6 @@ export default function MemoryDetailPage() {
         const data = await adminAPI.getMemory(id);
         setMemory(data);
         setShortTerm(data.short_term || '');
-        setMemoItemsJson(JSON.stringify(data.memo_items || [], null, 2));
-        setMonologuesJson(JSON.stringify(data.monologues || [], null, 2));
       } catch {
         alert('Failed to load memory');
         router.push('/admin/memory');
@@ -43,27 +39,8 @@ export default function MemoryDetailPage() {
   const handleSave = async () => {
     if (!memory) return;
     try {
-      let parsedMemoItems;
-      let parsedMonologues;
-
-      try {
-        parsedMemoItems = JSON.parse(memoItemsJson);
-      } catch {
-        alert('Invalid JSON in Memo Items');
-        return;
-      }
-
-      try {
-        parsedMonologues = JSON.parse(monologuesJson);
-      } catch {
-        alert('Invalid JSON in Monologues');
-        return;
-      }
-
       await adminAPI.updateMemory(memory.uid, {
         short_term: shortTerm,
-        memo_items: parsedMemoItems,
-        monologues: parsedMonologues,
       });
       alert('Memory updated successfully');
       loadMemory(memory.uid);
@@ -96,30 +73,30 @@ export default function MemoryDetailPage() {
           />
         </div>
 
-        {/* Memo Items (JSON) */}
+        {/* Memo Items (Read-Only) */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-[#262626]">
-            Memo Items (JSON List)
+            Memo Items (Read-Only)
           </label>
-          <div className="text-xs text-[#8e8e8e] mb-2">Edit as JSON array of objects.</div>
-          <textarea
-            className="w-full p-3 bg-gray-50 border border-[#dbdbdb] rounded-[4px] h-64 font-mono text-sm focus:border-[#a8a8a8] focus:outline-none"
-            value={memoItemsJson}
-            onChange={(e) => setMemoItemsJson(e.target.value)}
-          />
+          <div className="text-xs text-[#8e8e8e] mb-2">
+            Automatically managed by Event system. View only.
+          </div>
+          <pre className="w-full p-3 bg-gray-50 border border-[#dbdbdb] rounded-[4px] max-h-64 overflow-auto font-mono text-sm text-[#262626]">
+            {JSON.stringify(memory.memo_items || [], null, 2)}
+          </pre>
         </div>
 
-        {/* Monologues (JSON) */}
+        {/* Monologues (Read-Only) */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-[#262626]">
-            Monologues (JSON List)
+            Monologues (Read-Only)
           </label>
-          <div className="text-xs text-[#8e8e8e] mb-2">Edit as JSON array of objects.</div>
-          <textarea
-            className="w-full p-3 bg-gray-50 border border-[#dbdbdb] rounded-[4px] h-64 font-mono text-sm focus:border-[#a8a8a8] focus:outline-none"
-            value={monologuesJson}
-            onChange={(e) => setMonologuesJson(e.target.value)}
-          />
+          <div className="text-xs text-[#8e8e8e] mb-2">
+            Automatically managed by Event system. View only.
+          </div>
+          <pre className="w-full p-3 bg-gray-50 border border-[#dbdbdb] rounded-[4px] max-h-64 overflow-auto font-mono text-sm text-[#262626]">
+            {JSON.stringify(memory.monologues || [], null, 2)}
+          </pre>
         </div>
 
         <div className="flex justify-end pt-4 border-t border-[#dbdbdb]">
