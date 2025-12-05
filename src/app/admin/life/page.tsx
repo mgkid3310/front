@@ -11,6 +11,7 @@ export default function LifePage() {
   const [universes, setUniverses] = useState<Universe[]>([]);
 
   const [selectedWorldUid, setSelectedWorldUid] = useState<string>('');
+  const [selectedCharUid, setSelectedCharUid] = useState<string>('');
   const [isDeploying, setIsDeploying] = useState(false);
   const [showDeployModal, setShowDeployModal] = useState(false);
 
@@ -23,13 +24,9 @@ export default function LifePage() {
   }, []);
 
   useEffect(() => {
-    if (selectedWorldUid) {
-      loadLives(selectedWorldUid);
-      setDeployWorldUid(selectedWorldUid);
-    } else {
-      loadLives(); // Load all
-    }
-  }, [selectedWorldUid]);
+    loadLives(selectedWorldUid, selectedCharUid);
+    if (selectedWorldUid) setDeployWorldUid(selectedWorldUid);
+  }, [selectedWorldUid, selectedCharUid]);
 
   const loadMetadata = async () => {
     try {
@@ -55,9 +52,9 @@ export default function LifePage() {
     }
   };
 
-  const loadLives = async (worldUid?: string) => {
+  const loadLives = async (worldUid?: string, charUid?: string) => {
     try {
-      const data = await adminAPI.getLives(worldUid);
+      const data = await adminAPI.getLives(worldUid, charUid);
       setLives(data);
     } catch (e) {
       console.error(e);
@@ -75,7 +72,7 @@ export default function LifePage() {
         world_uid: deployWorldUid,
       });
       setShowDeployModal(false);
-      loadLives(selectedWorldUid);
+      loadLives(selectedWorldUid, selectedCharUid);
       alert('Life deployed successfully!');
     } catch (e) {
       console.error(e);
@@ -94,7 +91,7 @@ export default function LifePage() {
       return;
     try {
       await adminAPI.deleteLife(uid);
-      loadLives(selectedWorldUid);
+      loadLives(selectedWorldUid, selectedCharUid);
     } catch (e) {
       console.error(e);
       alert('Failed to delete life');
@@ -129,6 +126,18 @@ export default function LifePage() {
                 </option>
               );
             })}
+          </select>
+          <select
+            className="px-3 py-1.5 border border-[#dbdbdb] rounded-[4px] bg-gray-50 text-sm focus:outline-none focus:border-[#a8a8a8]"
+            value={selectedCharUid}
+            onChange={(e) => setSelectedCharUid(e.target.value)}
+          >
+            <option value="">All Characters</option>
+            {characters.map((c) => (
+              <option key={c.uid} value={c.uid}>
+                {c.name}
+              </option>
+            ))}
           </select>
         </div>
         <button

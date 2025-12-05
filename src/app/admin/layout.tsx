@@ -20,6 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Management
           </div>
           <NavLink href="/admin/life">Life Deployment</NavLink>
+          <NavLink href="/admin/profile">Profile Management</NavLink>
           <NavLink href="/admin/user">User & Relationship</NavLink>
 
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4 mt-6">

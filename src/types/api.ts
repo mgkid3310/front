@@ -57,6 +57,11 @@ export interface UniverseCreate {
   description?: string;
 }
 
+export interface UniverseUpdate {
+  name?: string;
+  description?: string;
+}
+
 export interface World {
   uid: string;
   universe_uid: string;
@@ -68,6 +73,13 @@ export interface World {
 
 export interface WorldCreate {
   universe_uid: string;
+  real_origin?: string | null;
+  world_origin?: string | null;
+  time_scale?: number;
+  timezone?: string;
+}
+
+export interface WorldUpdate {
   real_origin?: string | null;
   world_origin?: string | null;
   time_scale?: number;
@@ -125,15 +137,35 @@ export interface Relationship {
   following: boolean;
 }
 
+export interface MemoryEpisode {
+  created: string;
+  summary: string;
+}
+
+export interface MemoryItem {
+  timestamp: string;
+  content: string;
+}
+
 export interface Memory {
   uid: string;
   short_term: string;
-  memo_items: Record<string, string>[];
-  monologues: Record<string, string>[];
+  episodes: MemoryEpisode[];
+  memo_items: MemoryItem[];
+  monologues: MemoryItem[];
 }
 
 export interface MemoryUpdate {
   short_term?: string;
+}
+
+export interface MemorySearchResult {
+  timestamp: string;
+  text: string;
+}
+
+export interface MemorySearchResponse {
+  results: MemorySearchResult[];
 }
 
 export interface ProfileListResponse {

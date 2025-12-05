@@ -17,6 +17,9 @@ export default function UniversePage() {
   const [newWorldTimeScale, setNewWorldTimeScale] = useState(1.0);
   const [newWorldTimezone, setNewWorldTimezone] = useState('Asia/Seoul');
 
+  const [isEditingUniverse, setIsEditingUniverse] = useState(false);
+  const [editingUniverseId, setEditingUniverseId] = useState<string | null>(null);
+
   useEffect(() => {
     loadUniverses();
   }, []);
@@ -24,10 +27,15 @@ export default function UniversePage() {
   useEffect(() => {
     if (selectedUniverse) {
       loadWorlds(selectedUniverse.uid);
+      // Reset edit mode when selection changes
+      if (!isEditingUniverse) {
+        setNewUniverseName('');
+        setNewUniverseDesc('');
+      }
     } else {
       setWorlds([]);
     }
-  }, [selectedUniverse]);
+  }, [selectedUniverse, isEditingUniverse]);
 
   const loadUniverses = async () => {
     try {
@@ -49,17 +57,62 @@ export default function UniversePage() {
     }
   };
 
-  const handleCreateUniverse = async (e: React.FormEvent) => {
+  const handleCreateOrUpdateUniverse = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUniverseName) return;
     try {
-      await adminAPI.createUniverse({ name: newUniverseName, description: newUniverseDesc });
+      if (isEditingUniverse && editingUniverseId) {
+        await adminAPI.updateUniverse(editingUniverseId, {
+          name: newUniverseName,
+          description: newUniverseDesc,
+        });
+        setIsEditingUniverse(false);
+        setEditingUniverseId(null);
+      } else {
+        await adminAPI.createUniverse({ name: newUniverseName, description: newUniverseDesc });
+      }
       setNewUniverseName('');
       setNewUniverseDesc('');
       loadUniverses();
     } catch (e) {
       console.error(e);
-      alert('Failed to create universe');
+      alert(isEditingUniverse ? 'Failed to update universe' : 'Failed to create universe');
+    }
+  };
+
+  const handleEditUniverse = (u: Universe, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditingUniverse(true);
+    setEditingUniverseId(u.uid);
+    setNewUniverseName(u.name);
+    setNewUniverseDesc(u.description);
+    setSelectedUniverse(u);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingUniverse(false);
+    setEditingUniverseId(null);
+    setNewUniverseName('');
+    setNewUniverseDesc('');
+  };
+
+  const handleDeleteUniverse = async (uid: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (
+      !confirm(
+        'Are you sure you want to delete this universe? This action cannot be undone if worlds exist.'
+      )
+    )
+      return;
+    try {
+      await adminAPI.deleteUniverse(uid);
+      if (selectedUniverse?.uid === uid) {
+        setSelectedUniverse(null);
+      }
+      loadUniverses();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete universe (Check if worlds exist)');
     }
   };
 
@@ -113,20 +166,48 @@ export default function UniversePage() {
             >
               <div className="font-semibold text-[#262626]">{u.name}</div>
               <div className="text-sm text-gray-500 truncate mt-1">{u.description}</div>
-              <div className="text-[10px] text-gray-400 mt-2 font-mono uppercase tracking-wider">
-                {u.uid}
+              <div className="text-[10px] text-gray-400 mt-2 font-mono uppercase tracking-wider flex justify-between items-center">
+                <span>{u.uid}</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => handleEditUniverse(u, e)}
+                    className="text-blue-500 hover:text-blue-700 font-bold"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteUniverse(u.uid, e)}
+                    className="text-red-500 hover:text-red-700 font-bold"
+                  >
+                    Del
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
         <form
-          onSubmit={handleCreateUniverse}
+          onSubmit={handleCreateOrUpdateUniverse}
           className="p-4 border-t border-[#dbdbdb] bg-gray-50 space-y-3"
         >
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase">
+              {isEditingUniverse ? 'Edit Universe' : 'New Universe'}
+            </span>
+            {isEditingUniverse && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
           <input
             type="text"
-            placeholder="New Universe Name"
+            placeholder="Universe Name"
             className="w-full px-3 py-2 bg-white border border-[#dbdbdb] rounded-[4px] text-sm focus:border-[#a8a8a8] focus:outline-none"
             value={newUniverseName}
             onChange={(e) => setNewUniverseName(e.target.value)}
@@ -141,9 +222,13 @@ export default function UniversePage() {
           />
           <button
             type="submit"
-            className="w-full bg-[#0095f6] text-white py-2 rounded-[4px] text-sm font-semibold hover:bg-[#1877f2] active:opacity-70 transition-all"
+            className={`w-full py-2 rounded-[4px] text-sm font-semibold transition-all ${
+              isEditingUniverse
+                ? 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-[#0095f6] hover:bg-[#1877f2] text-white'
+            }`}
           >
-            Create Universe
+            {isEditingUniverse ? 'Update Universe' : 'Create Universe'}
           </button>
         </form>
       </div>

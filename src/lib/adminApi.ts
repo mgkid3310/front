@@ -1,8 +1,10 @@
 import type {
   Universe,
   UniverseCreate,
+  UniverseUpdate,
   World,
   WorldCreate,
+  WorldUpdate,
   Character,
   CharacterCreate,
   Life,
@@ -12,6 +14,7 @@ import type {
   Relationship,
   Memory,
   MemoryUpdate,
+  MemorySearchResponse,
   MessageHistoryResponse,
 } from '@/types/api';
 import { api } from './api';
@@ -22,9 +25,20 @@ export const adminAPI = {
     const { data } = await api.get<Universe[]>('/admin/universe');
     return data;
   },
+  getUniverse: async (uid: string) => {
+    const { data } = await api.get<Universe>(`/admin/universe/${uid}`);
+    return data;
+  },
   createUniverse: async (data: UniverseCreate) => {
     const { data: res } = await api.post<Universe>('/admin/universe', data);
     return res;
+  },
+  updateUniverse: async (uid: string, data: UniverseUpdate) => {
+    const { data: res } = await api.patch<Universe>(`/admin/universe/${uid}`, data);
+    return res;
+  },
+  deleteUniverse: async (uid: string) => {
+    await api.delete(`/admin/universe/${uid}`);
   },
 
   // World
@@ -33,8 +47,16 @@ export const adminAPI = {
     const { data } = await api.get<World[]>('/admin/world', { params });
     return data;
   },
+  getWorld: async (uid: string) => {
+    const { data } = await api.get<World>(`/admin/world/${uid}`);
+    return data;
+  },
   createWorld: async (data: WorldCreate) => {
     const { data: res } = await api.post<World>('/admin/world', data);
+    return res;
+  },
+  updateWorld: async (uid: string, data: WorldUpdate) => {
+    const { data: res } = await api.patch<World>(`/admin/world/${uid}`, data);
     return res;
   },
   deleteWorld: async (uid: string) => {
@@ -44,6 +66,10 @@ export const adminAPI = {
   // Character
   getCharacters: async () => {
     const { data } = await api.get<Character[]>('/admin/character');
+    return data;
+  },
+  getCharacter: async (uid: string) => {
+    const { data } = await api.get<Character>(`/admin/character/${uid}`);
     return data;
   },
   createCharacter: async (data: CharacterCreate) => {
@@ -59,8 +85,10 @@ export const adminAPI = {
   },
 
   // Life
-  getLives: async (worldUid?: string) => {
-    const params = worldUid ? { world_uid: worldUid } : {};
+  getLives: async (worldUid?: string, characterUid?: string) => {
+    const params: any = {};
+    if (worldUid) params.world_uid = worldUid;
+    if (characterUid) params.character_uid = characterUid;
     const { data } = await api.get<Life[]>('/admin/life', { params });
     return data;
   },
@@ -81,9 +109,20 @@ export const adminAPI = {
     const { data } = await api.get<User[]>('/admin/user');
     return data;
   },
+  getUser: async (uid: string) => {
+    const { data } = await api.get<User>(`/admin/user/${uid}`);
+    return data;
+  },
   getUserProfiles: async (userUid: string) => {
     const { data } = await api.get<Profile[]>(`/admin/user/${userUid}/profiles`);
     return data;
+  },
+  getPublicCharacterProfiles: async () => {
+    const { data } = await api.get<{ profiles: Profile[] }>('/profiles/characters');
+    return data.profiles;
+  },
+  deleteProfile: async (uid: string) => {
+    await api.delete(`/admin/profile/${uid}`);
   },
   getRelationships: async (sourceUid?: string, targetUid?: string) => {
     const params: any = {};
@@ -91,9 +130,6 @@ export const adminAPI = {
     if (targetUid) params.target_uid = targetUid;
     const { data } = await api.get<Relationship[]>('/admin/relationship', { params });
     return data;
-  },
-  deleteRelationship: async (sourceUid: string, targetUid: string) => {
-    await api.delete(`/admin/relationship/${sourceUid}/${targetUid}`);
   },
 
   // Memory
@@ -104,6 +140,14 @@ export const adminAPI = {
   updateMemory: async (uid: string, data: MemoryUpdate) => {
     const { data: res } = await api.patch<Memory>(`/admin/memory/${uid}`, data);
     return res;
+  },
+  searchMemory: async (uid: string, query: string, topK: number = 10) => {
+    const params = { query, top_k: topK };
+    const { data } = await api.get<MemorySearchResponse>(`/admin/memory/${uid}/search`, { params });
+    return data;
+  },
+  deleteRelationship: async (sourceUid: string, targetUid: string) => {
+    await api.delete(`/admin/relationship/${sourceUid}/${targetUid}`);
   },
 
   // Message Debugger

@@ -70,6 +70,17 @@ export default function UserPage() {
     }
   };
 
+  const handleDeleteProfile = async (uid: string) => {
+    if (!confirm('Are you sure you want to delete this profile?')) return;
+    try {
+      await adminAPI.deleteProfile(uid);
+      if (selectedUser) loadUserProfiles(selectedUser.uid);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete profile');
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-white border border-[#dbdbdb] rounded-lg overflow-hidden">
       <div className="border-b border-[#dbdbdb] flex">
@@ -156,10 +167,16 @@ export default function UserPage() {
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-full"></div>
-                        <div>
+                        <div className="flex-1">
                           <div className="font-bold text-[#262626]">{p.name}</div>
                           <div className="text-xs text-gray-400 font-mono">{p.uid}</div>
                         </div>
+                        <button
+                          onClick={() => handleDeleteProfile(p.uid)}
+                          className="text-gray-300 hover:text-[#ed4956] transition-colors"
+                        >
+                          ×
+                        </button>
                       </div>
                       <div className="text-sm text-gray-600 leading-relaxed">
                         {p.bio || 'No bio'}
